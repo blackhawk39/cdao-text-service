@@ -2,8 +2,8 @@ npm install
 
 npx  hardhat compile
 
-<!-- deploy -->
+## deploy -->
 npx hardhat run scripts/deploy-and-call.js
 
-<!-- corescan -->
+## corescan -->
 https://scan.test.btcs.network/
