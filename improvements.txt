@@ -1,0 +1,20 @@
+Reward
+1. Better reward functionality
+
+2.Tags
+multiple tags in question
+
+3. SubTags ( for example location specific)
+
+3. AskPrivate 
+Asking Question about specific tag to particular user. may need to provide additional money
+
+4. bestAnswer
+when tag reaches a certain amount of threshold we will distribute the tokens for the bestAnswer.
+
+Answering questions of a specific tag will give you the proficiency in that tag. Users can buy the trophies using social tokens to showcase.
+
+5. listen to events in real time to see question which are currently being asked.
+
+6. Question list
+limiting questions view ( Pagination)

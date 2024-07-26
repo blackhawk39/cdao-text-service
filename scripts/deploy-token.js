@@ -7,18 +7,13 @@
 const hre = require("hardhat");
 
 async function main() {
-  const MessagingService = await hre.ethers.getContractFactory("MessagingService");
+  const SocialToken = await hre.ethers.getContractFactory("SocialToken");
   const [deployer] = await hre.ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
-  const messagingService = await MessagingService.deploy();
+  const socialToken = await SocialToken.deploy();
 
-  await messagingService.deployed();
-  console.log("MessagingService contract deployed to:", messagingService.address);
-  console.log("send message: Self")
-  const tx = await await messagingService.sendMessage(deployer.address, "this is demo message")
-  await tx.wait()
-  console.log("explore on corescan", tx.address);
-  console.log("call getMyMessages() :", await messagingService.getMyMessages())
+  await socialToken.deployed();
+  console.log("MessagingService contract deployed to:", socialToken.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
