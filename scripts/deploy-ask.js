@@ -10,7 +10,7 @@ async function main() {
   const AskAround = await hre.ethers.getContractFactory("AskAround");
   const [deployer] = await hre.ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
-  const askAround = await AskAround.deploy("0x3D00C687BD3C2269545b76D391A0388551E518F9");
+  const askAround = await AskAround.deploy("0xAf790fABCf6253D1D621D1bdF04C94060Dc01B2E");
 
   await askAround.deployed();
   console.log("MessagingService contract deployed to:", askAround.address);

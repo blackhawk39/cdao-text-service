@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import AskAround from "./contracts/AskAround.sol/AskAround.json"
+import SocialToken from "./contracts/SocialToken.sol/SocialToken.json"
 // Replace with your contract's ABI and address
-// 0x4e747e116d4ffc8399c522e9b8e9b3567c9a46f2
-// const CONTRACT_ADDRESS = '0x29536E9a38f42b8dc28EA77933c12D0b19452C43';
-const CONTRACT_ADDRESS = '0x1559f6b38Fd2E80Db497cFD601df3A75bc366Be0';
-// const CONTRACT_ABI = [
-//   // Add your contract's ABI here
-// ];
-
+// const CONTRACT_ADDRESS = '0x1559f6b38Fd2E80Db497cFD601df3A75bc366Be0';
+const CONTRACT_ADDRESS = '0x87752c7d9679B5c3D677c1a72A4A11F9C17aA22C';
+const TOKEN_ADDRESS = '0xAf790fABCf6253D1D621D1bdF04C94060Dc01B2E'
 
 
 const App = () => {
@@ -27,7 +24,19 @@ const App = () => {
   const [newAnswer, setNewAnswer] = useState('');
   const [newTag, setNewTag] = useState('');
   const [removeTag, setRemoveTag] = useState('');
-
+  const [balance, setBalance] = useState(0);
+  const [allTags, setAllTags] = useState([]);
+  const [ListQuestions, setListQuestions] = useState([]);
+  const [QuestionsIdByTag, setQuestionsIdByTag] = useState([]);
+  const [bestAnswerCount, setBestAnswerCount] = useState(0);
+  const [questionDetails, setQuestionDetails] = useState({
+    asker: '',
+    content: '',
+    timestamp: 0,
+    tag: '',
+    bestAnswerId: 0,
+  });
+  const [reward, setReward] = useState(0);
   useEffect(() => {
     const initializeEthers = async () => {
       if (window.ethereum) {
@@ -140,9 +149,9 @@ const App = () => {
   const getAnswersByQuestionId = async (questionId) => {
     if (contract && questionId) {
       try {
-        const answers = await contract.getAnswers(parseInt(questionId)-1);
+        const answers = await contract.getAnswers(parseInt(questionId));
         setAnswers(answers.map(a => a.toString()));
-        setSelectedQuestionId(parseInt(questionId)-1);
+        setSelectedQuestionId(parseInt(questionId));
         setCurrentPage(3);
       } catch (error) {
         console.error('Error retrieving answers:', error);
@@ -168,6 +177,97 @@ const App = () => {
 
     }
   };
+  async function getTokenBalance() {
+    const tokenContract = new ethers.Contract(TOKEN_ADDRESS, SocialToken, signer);
+    const userAddress = await signer.getAddress();
+    try {
+      const balance = await tokenContract.balanceOf(userAddress);
+      setBalance(ethers.utils.formatUnits(balance, 18));
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+    }
+  }
+
+  const getTagKeys = async () => {
+    if (contract) {
+      try {
+        const tags = await contract.getTagKeys();
+        setAllTags(tags);
+        console.log('Tags Fetched');
+      } catch (error) {
+        console.error('Error fetchingh tag:', error);
+      }
+    }
+  };
+  const getUser = async (userAddress) => {
+    if (contract && userAddress ) {
+      try {
+        const [name, questions] = await contract.getUser(userAddress);
+        setUserName(name);
+        setListQuestions(questions);
+        console.log('user Fetched');
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    }
+  };
+  const getQuestion = async (questionId) => {
+    if (contract && questionId) {
+      try {
+        const [asker, content, timestamp, tag, bestAnswerId]  = await contract.getQuestion(questionId);
+        setQuestionDetails({
+          asker,
+          content,
+          timestamp: new Date(timestamp.toNumber() * 1000).toLocaleString(),
+          tag,
+          bestAnswerId: bestAnswerId.toString(),
+        });
+        console.log('Question Fetched');
+      } catch (error) {
+        console.error('Error fetchingh Question:', error);
+      }
+    }
+  };
+  const getQuestionsIdByTag = async (tag) => {
+    if (contract && tag) {
+      try {
+        const questionIds = await contract.getQuestion();
+        setQuestionsIdByTag(questionIds);
+        console.log('Question ids fetched');
+      } catch (error) {
+        console.error('Error fetchingh Question ids:', error);
+      }
+    }
+  };
+
+  const getBestAnswerCount = async (tag) => {
+    if (contract && tag) {
+      try {
+        const userAddress = await signer.getAddress();
+        const count = await contract.getBestAnswerCount(userAddress, tag);
+        setBestAnswerCount(count.toString());
+        console.log('getBestAnswerCount Fetched');
+      } catch (error) {
+        console.error('Error fetching getBestAnswerCount:', error);
+      }
+    }
+  };
+  const getCurrentReward = async (tag) => {
+    if (contract && tag) {
+      try {
+        const count = await contract.getCurrentReward(tag);
+        setReward(count);
+        console.log('getCurrentReward Fetched');
+      } catch (error) {
+        console.error('Error fetching getCurrentReward:', error);
+      }
+    }
+  };
+  
+
+  
+
+
 
   const renderRegisterPage = () => (
     <div>
@@ -258,5 +358,6 @@ const App = () => {
     </div>
   );
 };
+
 
 export default App;

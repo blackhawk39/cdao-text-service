@@ -13,11 +13,13 @@ contract AskAround is Ownable, ReentrancyGuard {
         string tag;
         bool answered;
         uint256 bestAnswerId;
+        uint256 timestamp;
     }
 
     struct Answer {
         address answerer;
         string content;
+        uint256 timestamp;
     }
 
     struct User {
@@ -40,7 +42,7 @@ contract AskAround is Ownable, ReentrancyGuard {
     uint256 public constant REWARD_FOR_QUESTION = 10 * 10 ** 18; // 10 SOC tokens
     uint256 public constant REWARD_FOR_ANSWER = 5 * 10 ** 18; // 5 SOC tokens
     uint256 public constant BEST_ANSWER_REWARD = 50 * 10 ** 18; // 50 SOC tokens
-    uint256 public constant ONE_MONTH = 30 days;
+    uint256 public constant ONE_MONTH = 1 minutes;
     uint256 public constant MAX_TAG_LENGTH = 10;
 
     IERC20 public token;
@@ -52,6 +54,7 @@ contract AskAround is Ownable, ReentrancyGuard {
     mapping(address => mapping(string => UserTag)) public userTags;
     mapping(address => uint256) public stakes;
     mapping(string => uint256[]) public tagToQuestions;
+    string[] private tagKeys; // Array to store all tag keys
 
     event QuestionAsked(address indexed asker, uint256 indexed questionId, string content, string tag);
     event AnswerSubmitted(address indexed answerer, uint256 indexed questionId, uint256 answerId, string content);
@@ -106,12 +109,13 @@ contract AskAround is Ownable, ReentrancyGuard {
         require(bytes(_content).length > 0, "Content cannot be empty");
 
         questions.push(Question({
-            id: (questions.length +1),
+            id: questions.length ,
             asker: msg.sender,
             content: _content,
             tag: _tag,
             answered: false,
-            bestAnswerId: 0
+            bestAnswerId: 0,
+            timestamp: block.timestamp
         }));
         uint256 questionId = questions.length - 1;
         users[msg.sender].questions.push(questionId);
@@ -130,7 +134,8 @@ contract AskAround is Ownable, ReentrancyGuard {
 
         answers[_questionId].push(Answer({
             answerer: msg.sender,
-            content: _content
+            content: _content,
+            timestamp: block.timestamp
         }));
         uint256 answerId = answers[_questionId].length - 1;
 
@@ -167,6 +172,7 @@ contract AskAround is Ownable, ReentrancyGuard {
 
         if (tags[_tag].userCount == 0) {
             tags[_tag] = Tag({userCount: 1});
+            tagKeys.push(_tag);
         } else {
             tags[_tag].userCount += 1;
         }
@@ -226,7 +232,7 @@ contract AskAround is Ownable, ReentrancyGuard {
         return reward;
     }
 
-    function getQuestionsByTag(string memory _tag) public view returns (Question[] memory) {
+    function getQuestionsByTag(string memory _tag) tagExists(_tag) onlyUserWithTag(_tag) public view returns (Question[] memory) {
         uint256[] storage questionIds = tagToQuestions[_tag];
         Question[] memory result = new Question[](questionIds.length);
 
@@ -271,4 +277,35 @@ contract AskAround is Ownable, ReentrancyGuard {
     function getAnswers(uint256 questionId) public view returns (Answer[] memory) {
         return answers[questionId];
     }
+    // Getters
+    function getUser(address userAddress) public view returns (string memory, uint256[] memory) {
+        User storage user = users[userAddress];
+        return (user.name, user.questions);
+    }
+
+    function getBestAnswerCount(address userAddress, string memory tag) public view returns (uint256) {
+        return userTags[userAddress][tag].bestAnswerCount;
+    }
+    function getQuestion(uint256 questionId)  public view returns (address, string memory, uint256, string memory, uint256) {
+        Question storage q = questions[questionId];
+        return (q.asker, q.content, q.timestamp, q.tag, q.bestAnswerId);
+    }
+    function getQuestionsIdByTag(string memory _tag) tagExists(_tag) onlyUserWithTag(_tag) public view returns (uint256[] memory) {
+        return tagToQuestions[_tag];
+    }
+    function getTagKeys() public view returns (string[] memory) {
+        return tagKeys;
+    }
+    function getCurrentReward(string memory _tag) public view onlyUserWithTag(_tag) returns (uint256) {
+        UserTag storage userTag = userTags[msg.sender][_tag];
+        uint256 timeElapsed = block.timestamp - userTag.lastClaimed;
+        require(timeElapsed < ONE_MONTH, "Claim period is one minute");
+
+        uint256 monthlyReward = calculateReward(userTag.timestamp, block.timestamp);
+        uint256 monthsForReward = timeElapsed / ONE_MONTH;
+        uint256 reward = monthlyReward * monthsForReward;
+        return reward;
+    }
+    
+
 }
