@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract AskAround is Ownable, ReentrancyGuard {
     struct Question {
+        uint256 id;
         address asker;
         string content;
         string tag;
@@ -95,7 +96,7 @@ contract AskAround is Ownable, ReentrancyGuard {
         }
 
         // Check if the user is already registered
-        require(bytes(users[msg.sender].name).length == 0, "User already registered");
+        // require(bytes(users[msg.sender].name).length == 0, "User already registered");
 
         // Register the user with the new name
         users[msg.sender].name = _name;
@@ -105,6 +106,7 @@ contract AskAround is Ownable, ReentrancyGuard {
         require(bytes(_content).length > 0, "Content cannot be empty");
 
         questions.push(Question({
+            id: (questions.length +1),
             asker: msg.sender,
             content: _content,
             tag: _tag,
@@ -265,5 +267,8 @@ contract AskAround is Ownable, ReentrancyGuard {
         }
 
         return result;
+    }
+    function getAnswers(uint256 questionId) public view returns (Answer[] memory) {
+        return answers[questionId];
     }
 }
