@@ -18,3 +18,5 @@ Answering questions of a specific tag will give you the proficiency in that tag.
 
 6. Question list
 limiting questions view ( Pagination)
+
+7. When TAGs get large enough , we have voting mechanism to flag users. 

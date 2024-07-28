@@ -7,13 +7,13 @@
 const hre = require("hardhat");
 
 async function main() {
-  const SocialToken = await hre.ethers.getContractFactory("SocialToken");
+  const AskAround = await hre.ethers.getContractFactory("AskAround");
   const [deployer] = await hre.ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
-  const socialToken = await SocialToken.deploy("SocialToken","SOC");
+  const askAround = await AskAround.deploy("0x3D00C687BD3C2269545b76D391A0388551E518F9");
 
-  await socialToken.deployed();
-  console.log("MessagingService contract deployed to:", socialToken.address);
+  await askAround.deployed();
+  console.log("MessagingService contract deployed to:", askAround.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
