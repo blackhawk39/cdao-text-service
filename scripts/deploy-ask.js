@@ -13,7 +13,7 @@ async function main() {
   const askAround = await AskAround.deploy("0xAf790fABCf6253D1D621D1bdF04C94060Dc01B2E");
 
   await askAround.deployed();
-  console.log("MessagingService contract deployed to:", askAround.address);
+  console.log("AskAround contract deployed to:", askAround.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

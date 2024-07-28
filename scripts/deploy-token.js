@@ -13,7 +13,7 @@ async function main() {
   const socialToken = await SocialToken.deploy("SocialToken","SOC");
 
   await socialToken.deployed();
-  console.log("MessagingService contract deployed to:", socialToken.address);
+  console.log("SocialToken contract deployed to:", socialToken.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
